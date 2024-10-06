@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jothub.mapper.FileMapper">
+
+    <insert id="fileUpload">
+        insert into files (file_name, file_size, file_type, file_path, folder_id)
+        values (#{fileName}, #{fileSize}, #{fileType}, #{filePath}, #{folderId})
+    </insert>
+
+    <!--    条件查询-->
+    <select id="fileGetByAttributes" resultType="com.jothub.pojo.Files">
+        select * from files
+        <where>
+            <if test="fileId != null and fileId != 0">
+                file_id = #{fileId}
+            </if>
+            <if test="fileName != null and fileName != ''">
+                and file_name like concat('%', #{fileName}, '%')
+            </if>
+            <if test="fileType != null and fileType != ''">
+                and file_type = #{fileType}
+            </if>
+            <if test="folderId != null">
+                and folder_id = #{folderId}
+            </if>
+        </where>
+        order by created_at
+    </select>
+
+    <select id="getFileById" resultType="com.jothub.pojo.Files">
+        select * from files where file_id = #{fileId}
+    </select>
+    <select id="getFilePathsByIds" resultType="java.lang.String">
+        select file_path from files where file_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="getFileIdsByFolderIds" resultType="java.lang.Integer">
+        select file_id from files where folder_id in
+        <foreach collection="folderIdsToDelete" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="fileDeleteByIds">
+        delete from files where file_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="fileUpdate">
+        update files
+        <set>
+            <if test="fileName != null">
+                file_name = #{fileName},
+            </if>
+            <if test="folderId != 0">
+                folder_id = #{folderId},
+            </if>
+        </set>
+        <where>
+            file_id = #{fileId}
+        </where>
+    </update>
+</mapper>

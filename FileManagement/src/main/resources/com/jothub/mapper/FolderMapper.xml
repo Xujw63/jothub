@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jothub.mapper.FolderMapper">
+
+    <!-- 插入文件夹 -->
+    <insert id="folderCreate">
+        INSERT INTO folders (folder_name, parent_folder_id)
+        VALUES (#{folderName}, #{parentFolderId})
+    </insert>
+
+    <!-- 更新文件夹 -->
+    <update id="folderUpdate">
+        UPDATE folders
+        <set>
+            <if test="folderName != null and folderName != ''">
+                folder_name = #{folderName},
+            </if>
+            <if test="parentFolderId != null and parentFolderId != 0">
+                parent_folder_id = #{parentFolderId},
+            </if>
+        </set>
+        WHERE folder_id = #{folderId}
+    </update>
+
+    <!-- 删除文件夹 -->
+    <delete id="folderDelete">
+        DELETE FROM folders
+        WHERE folder_id IN
+        <foreach item="id" index="index" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据ID列表获取文件夹 -->
+    <select id="folderGetByIds" resultType="com.jothub.pojo.Folders">
+        SELECT * FROM folders
+        WHERE folder_id IN
+        <foreach item="id" index="index" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <!-- 根据父文件夹ID获取文件夹 -->
+    <select id="folderGetByParentFolderId" resultType="com.jothub.pojo.Folders">
+        SELECT * FROM folders
+        WHERE parent_folder_id = #{parentFolderId}
+    </select>
+    <select id="getSubfolderIdsByParentId" resultType="java.lang.Integer">
+        SELECT folder_id FROM folders
+        WHERE parent_folder_id = #{parentFolderId}
+    </select>
+
+</mapper>
