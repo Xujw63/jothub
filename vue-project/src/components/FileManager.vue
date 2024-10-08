@@ -23,6 +23,7 @@
             :headers="uploadHeaders"
             :data="uploadData"
             :show-file-list="false"
+            :before-upload="beforeUpload"
             :on-success="handleUploadSuccess"
             :on-error="handleUploadError"
           >
@@ -223,6 +224,15 @@ export default {
     navigateFolder(folderId) {
       this.loadFolder(folderId); 
     },
+
+    beforeUpload(file) {
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        this.$message.error('上传文件大小不能超过 10MB!');
+      }
+      return isLt10M;
+    },
+
     handleUploadSuccess(response) {
       try {
         if (response.code === 1) {
@@ -240,26 +250,31 @@ export default {
     },
     async downloadFile(item) {
       try {
-        const response = await axios.get(`http://47.109.192.182:8080/files/download/${item.fileId}`, {
-          responseType: 'blob'
-        });
-        if (response.status === 200) {
-          this.downloadFileBlob(response.data, `${item.fileName}${item.fileType}`);
-        } else {
-          ElMessage.error("用户未激活，无法下载文件");
+          const response = await axios.get(`http://47.109.192.182:8080/files/download/${item.fileId}`, {
+              responseType: 'blob'
+          });
+
+          // 检查HTTP状态码
+          if (response.status === 200) {
+              this.downloadFileBlob(response.data, `${item.fileName}${item.fileType}`);
+          }
+        } catch (error) {
+          if(error.response.status === 403){
+            ElMessage.error("用户未激活,无法下载文件");
+          }else{
+            ElMessage.error("下载失败");
+          }
         }
-      } catch (error) {
-        ElMessage.error("下载失败");
-      }
     },
-    downloadFileBlob(data, filename) {
-      const url = window.URL.createObjectURL(new Blob([data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    // 下载文件的辅助函数
+    downloadFileBlob(blob, fileName) {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName); // 或者使用 item.fileName + item.fileType
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     },
     formatDate(date) {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
