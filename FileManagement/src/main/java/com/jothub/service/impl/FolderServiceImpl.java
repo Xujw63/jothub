@@ -72,10 +72,12 @@ public class FolderServiceImpl implements FolderService {
         List<Integer> fileIdsToDelete = fileMapper.getFileIdsByFolderIds(folderIdsToDelete);
 
         // 删除文件记录和文件物理存储
-        for (String filePath : fileMapper.getFilePathsByIds(fileIdsToDelete)) {
-            File file = new File(filePath);
-            if (file.exists()) {
-                file.delete();
+        if(!fileIdsToDelete.isEmpty()) {
+            for (String filePath : fileMapper.getFilePathsByIds(fileIdsToDelete)) {
+                File file = new File(filePath);
+                if (file.exists()) {
+                    file.delete();
+                }
             }
         }
 
