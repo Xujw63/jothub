@@ -172,9 +172,22 @@ public class FileController {
         // 从数据库中获取文件信息
         Files file = fileService.getFileById(fileId);
 
+        // 检查用户状态
+        if (!userService.userIsActive(token)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json");
+            response.getWriter().write(Result.error("用户未激活，无法下载文件").toString());
+            return;
+        }
+
+        // 从数据库中获取文件信息
+        Files file = fileService.getFileById(fileId);
+
         // 检查文件是否存在
         if (file == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
             response.getWriter().write(Result.error("文件未找到").toString());
             return;
@@ -185,6 +198,7 @@ public class FileController {
         File downloadFile = new File(filePath);
         if (!downloadFile.exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
             response.getWriter().write(Result.error("服务器上未找到该文件").toString());
             return;
@@ -204,6 +218,7 @@ public class FileController {
             }
         } catch (IOException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
             response.getWriter().write(Result.error("下载失败").toString());
         }
