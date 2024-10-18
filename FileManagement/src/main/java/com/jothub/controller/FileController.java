@@ -85,6 +85,9 @@ public class FileController {
                                       @RequestParam(value = "fileType", required = false, defaultValue = "") String fileType,
                                       @RequestParam(value = "parentFolderId", required = false, defaultValue = "0") int folderId) {
         List<Files> files = fileService.fileGetByAttributes(fileId, fileName, fileType, folderId);
+        if(files==null || files.isEmpty()){
+            return Result.error("没有该文件");
+        }
         return Result.success(files);
     }
 
